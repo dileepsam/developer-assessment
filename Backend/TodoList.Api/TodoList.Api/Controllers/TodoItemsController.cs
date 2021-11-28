@@ -1,105 +1,74 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace TodoList.Api.Controllers
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+
+using TodoList.Api.Models;
+
+namespace TodoList.Api.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class TodoItemsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TodoItemsController : ControllerBase
+    private readonly ILogger<TodoItemsController> _logger;
+    private readonly ITodoService _todoService;
+
+    public TodoItemsController(ILogger<TodoItemsController> logger, ITodoService todoService)
     {
-        private readonly TodoContext _context;
-        private readonly ILogger<TodoItemsController> _logger;
+        _logger = logger;
+        _todoService = todoService;
+    }
 
-        public TodoItemsController(TodoContext context, ILogger<TodoItemsController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
+    // GET: api/TodoItems
+    [HttpGet]
+    public async Task<IActionResult> GetTodoItems() => Ok(await _todoService.GetTodoItems());
 
-        // GET: api/TodoItems
-        [HttpGet]
-        public async Task<IActionResult> GetTodoItems()
-        {
-            var results = await _context.TodoItems.Where(x => !x.IsCompleted).ToListAsync();
-            return Ok(results);
-        }
+    // GET: api/TodoItems/...
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetTodoItem(Guid id)
+    {
+        TodoItem result = await _todoService.GetTodoItem(id);
+        return result == null ? NotFound() : Ok(result);
+    }
 
-        // GET: api/TodoItems/...
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTodoItem(Guid id)
-        {
-            var result = await _context.TodoItems.FindAsync(id);
+    // PUT: api/TodoItems/... 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutTodoItem(Guid id, TodoItem todoItem)
+    {
+        if (id != todoItem.Id)
+            return BadRequest();
 
-            if (result == null)
-            {
-                return NotFound();
-            }
+        TodoUpdateResult result = await _todoService.UpdateTodoItem(todoItem);
 
-            return Ok(result);
-        }
+        if (result == TodoUpdateResult.Updated)
+            return Ok();
 
-        // PUT: api/TodoItems/... 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTodoItem(Guid id, TodoItem todoItem)
-        {
-            if (id != todoItem.Id)
-            {
-                return BadRequest();
-            }
+        if (result == TodoUpdateResult.NotFound)
+            return NotFound("Todo item not found");
 
-            _context.Entry(todoItem).State = EntityState.Modified;
+        // in future if anymore failure cases introduced this will work as a generic error message.
+        _logger.LogError("Something went wrong while updating item.", result);
+        return BadRequest($"Something went wrong: {result}");
+    }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TodoItemIdExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+    // POST: api/TodoItems 
+    [HttpPost]
+    public async Task<IActionResult> PostTodoItem(TodoItem todoItem)
+    {
+        if (string.IsNullOrEmpty(todoItem?.Description))
+            return BadRequest("Description is required");
 
-            return NoContent();
-        } 
+        TodoCreationResult result = await _todoService.AddTodoItemAsync(todoItem);
 
-        // POST: api/TodoItems 
-        [HttpPost]
-        public async Task<IActionResult> PostTodoItem(TodoItem todoItem)
-        {
-            if (string.IsNullOrEmpty(todoItem?.Description))
-            {
-                return BadRequest("Description is required");
-            }
-            else if (TodoItemDescriptionExists(todoItem.Description))
-            {
-                return BadRequest("Description already exists");
-            } 
+        if (result == TodoCreationResult.AlreadyExist)
+            return BadRequest("Description already exists");
 
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
-             
+        if (result == TodoCreationResult.Created)
             return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
-        } 
 
-        private bool TodoItemIdExists(Guid id)
-        {
-            return _context.TodoItems.Any(x => x.Id == id);
-        }
-
-        private bool TodoItemDescriptionExists(string description)
-        {
-            return _context.TodoItems
-                   .Any(x => x.Description.ToLowerInvariant() == description.ToLowerInvariant() && !x.IsCompleted);
-        }
+        // in future if anymore failure cases introduced this will work as a generic error message.
+        return BadRequest($"Something went wrong: {result}");
     }
 }
