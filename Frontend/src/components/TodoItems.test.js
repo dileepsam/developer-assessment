@@ -1,6 +1,5 @@
-import { render, screen, cleanup, act } from '@testing-library/react'
+import { render, cleanup } from '@testing-library/react'
 import TodoItems from './TodoItems'
-import todoItemService from 'services/TodoItemsService'
 
 jest.mock('../services/TodoItemsService')
 

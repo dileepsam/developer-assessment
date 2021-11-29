@@ -27,13 +27,9 @@ function TodoItems({ addedItem }) {
     }
   }
 
-  const handleMarkAsComplete = async (item) => {
+  const handleUpdated = async (item) => {
     try {
-      const completedItem = {
-        ...item,
-        isCompleted: true,
-      }
-      await todoItemService.update(completedItem.id, completedItem)
+      await todoItemService.update(item.id, item)
       getItems()
     } catch (e) {
       setShowToastMessage('Failed to mark as completed')
@@ -51,14 +47,14 @@ function TodoItems({ addedItem }) {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>Id</th>
+            {/* <th>Id</th> */}
             <th>Description</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody data-testid="contents">
           {items.map((item) => (
-            <TodoItem key={item.id} id={item.id} description={item.description} onComplete={handleMarkAsComplete} />
+            <TodoItem key={item.id} item={item} onUpdated={handleUpdated} />
           ))}
         </tbody>
       </Table>

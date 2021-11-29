@@ -25,7 +25,7 @@ public class TodoService : ITodoService
         _logger = logger;
     }
 
-    public async Task<List<TodoItem>> GetTodoItems() => await _todoContext.TodoItems.Where(x => !x.IsCompleted).ToListAsync();
+    public async Task<List<TodoItem>> GetTodoItems() => await _todoContext.TodoItems.ToListAsync();
 
     public async Task<TodoItem> GetTodoItem(Guid id) => await _todoContext.TodoItems.FindAsync(id);
 

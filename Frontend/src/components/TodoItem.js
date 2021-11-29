@@ -2,15 +2,15 @@ import React from 'react'
 import { Button } from 'react-bootstrap'
 
 function TodoItem(props) {
-  const { id, description, onComplete } = props
+  const { item, onUpdated } = props
 
   return (
     <tr>
-      <td>{id}</td>
-      <td>{description}</td>
+      {/* <td>{item.id}</td> */}
+      <td>{item.description}</td>
       <td>
-        <Button variant="warning" size="sm" onClick={() => onComplete({ id, description })}>
-          Mark as completed
+        <Button data-testid="action" variant="warning" size="sm" onClick={() => onUpdated({...item,isCompleted:!item.isCompleted})}>
+          {item.isCompleted ? 'Mark as incomplete' : 'Mark as completed'}
         </Button>
       </td>
     </tr>
