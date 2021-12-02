@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace TodoList.Api.Models;
+﻿namespace TodoList.Api.Models;
 
 public interface ITodoService
 {

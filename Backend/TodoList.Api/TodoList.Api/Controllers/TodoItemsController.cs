@@ -1,12 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-
-using TodoList.Api.Models;
-
-namespace TodoList.Api.Controllers;
+﻿namespace TodoList.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

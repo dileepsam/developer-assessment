@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-
-namespace TodoList.Api.Models;
+﻿namespace TodoList.Api.Models;
 
 /// <summary>
 /// TodoService 
