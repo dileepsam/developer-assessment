@@ -1,5 +1,3 @@
-using System;
-
 namespace TodoList.Api.Models;
 
 public class TodoItem
